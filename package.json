@@ -16,7 +16,7 @@
   },
   "keywords": ["hx", "wire-protocol", "fortress", "websocket", "codec", "let.ai"],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "packageManager": "npm@11.11.1",
   "files": ["dist", "src"],

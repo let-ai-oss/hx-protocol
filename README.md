@@ -24,3 +24,7 @@ import type { FortressToHubFrame, HubToFortressFrame } from "@let-ai/hx-protocol
 
 The two RPC-payload seams are generic and default to `unknown`; specialize them
 per consumer, e.g. `FortressToHubFrame<MyRpcResult>`.
+
+`decodeFrame` throws on malformed JSON and casts without checking — use it only
+for trusted input. For frames arriving off the wire, prefer `safeDecodeFrame`,
+which never throws and returns `{ ok: true; frame } | { ok: false; error }`.

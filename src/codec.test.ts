@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { decodeFrame, encodeFrame } from "./codec.js";
+import { decodeFrame, encodeFrame, safeDecodeFrame } from "./codec.js";
 import type { FortressToHubFrame, HubToFortressFrame } from "./frames.js";
 
 describe("hx-protocol codec", () => {
@@ -23,5 +23,22 @@ describe("hx-protocol codec", () => {
     const up: FortressToHubFrame<{ ok: true }> = { t: "rpcResult", id: "2", result: { ok: true } };
     assert.deepStrictEqual(decodeFrame(encodeFrame(down)), down);
     assert.deepStrictEqual(decodeFrame(encodeFrame(up)), up);
+  });
+
+  it("safeDecodeFrame returns the frame for a valid envelope", () => {
+    const f: FortressToHubFrame = { t: "heartbeat" };
+    assert.deepStrictEqual(safeDecodeFrame<FortressToHubFrame>(encodeFrame(f)), { ok: true, frame: f });
+  });
+
+  it("safeDecodeFrame reports an error for malformed JSON instead of throwing", () => {
+    const result = safeDecodeFrame("{not json");
+    assert.equal(result.ok, false);
+  });
+
+  it("safeDecodeFrame rejects a payload without a string 't' discriminator", () => {
+    assert.equal(safeDecodeFrame("123").ok, false);
+    assert.equal(safeDecodeFrame("null").ok, false);
+    assert.equal(safeDecodeFrame(JSON.stringify({ id: "1" })).ok, false);
+    assert.equal(safeDecodeFrame(JSON.stringify({ t: 5 })).ok, false);
   });
 });

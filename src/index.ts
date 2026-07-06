@@ -1,4 +1,5 @@
-export { decodeFrame, encodeFrame } from "./codec.js";
+export { decodeFrame, encodeFrame, safeDecodeFrame } from "./codec.js";
+export type { DecodeResult } from "./codec.js";
 export type {
   FortressToHubFrame,
   HubToFortressFrame,
