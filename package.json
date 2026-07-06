@@ -1,0 +1,40 @@
+{
+  "name": "@let-ai/hx-protocol",
+  "version": "0.1.0",
+  "description": "Shared HX wire protocol: transport-neutral frame types + JSON codec.",
+  "license": "MIT",
+  "private": true,
+  "author": "let.ai",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/let-ai-oss/hx-protocol.git"
+  },
+  "homepage": "https://github.com/let-ai-oss/hx-protocol#readme",
+  "bugs": {
+    "url": "https://github.com/let-ai-oss/hx-protocol/issues"
+  },
+  "keywords": ["hx", "wire-protocol", "fortress", "websocket", "codec", "let.ai"],
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "npm@11.11.1",
+  "files": ["dist", "src"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --import tsx \"src/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^6.0.0"
+  }
+}
