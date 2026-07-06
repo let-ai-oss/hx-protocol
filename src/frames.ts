@@ -1,7 +1,7 @@
 import type { FortressIdentity } from "./identity.js";
 import type { MsgData, MsgReply } from "./messages.js";
 
-// --- MCP tunnel (MC-2430) — reverse-tunnel MCP transport for a fortress with no public URL ---
+// --- MCP tunnel — reverse-tunnel MCP transport for a fortress with no public URL ---
 export interface McpToolDef {
   name: string;
   description: string;
@@ -21,7 +21,7 @@ export type FortressToHubFrame<TRpcResult = unknown> =
   | { t: "moduleReply"; id: string; reply: MsgReply }
   | { t: "rpcResult"; id: string; result: TRpcResult }
   | { t: "rpcError"; id: string; error: string }
-  // Fortress→cloud realtime invalidation (MC-2415): emitted after an hx ingest
+  // Fortress→cloud realtime invalidation: emitted after an hx ingest
   // so the cloud refreshes the affected user's live "my sessions" queries —
   // including fortress-direct writes the cloud never relayed.
   | { t: "hxInvalidate"; userExternalId: string; orgExternalId: string | null }
