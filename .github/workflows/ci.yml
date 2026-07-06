@@ -17,3 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run build
+      # dist/ is committed (so consumers run no install-time build); fail if stale.
+      - name: Verify committed dist is fresh
+        run: git diff --exit-code dist
