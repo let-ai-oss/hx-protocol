@@ -14,10 +14,22 @@ export type McpTunnelResult =
   | { method: "listTools"; tools: McpToolDef[] }
   | { method: "callTool"; content: string; isError?: boolean };
 
+/** Collection telemetry a Fortress reports to the hub — pure counts from its own
+ *  hx Postgres. Recency ("last ingest") is signalled separately via `hxInvalidate`;
+ *  liveness via `heartbeat`. `embeddings` is null on a non-pgvector Fortress (the
+ *  table is absent), distinct from 0 (present, nothing indexed yet). */
+export interface CollectionStats {
+  sessions: number;
+  turns: number;
+  embeddings: number | null;
+}
+
 export type FortressToHubFrame<TRpcResult = unknown> =
   | ({ t: "enroll"; enrollToken: string } & FortressIdentity)
   | ({ t: "hello"; fortressId: string; credential: string } & FortressIdentity)
   | { t: "heartbeat" }
+  // Unsolicited fortress→hub push (like hxInvalidate): periodic collection counts.
+  | { t: "collectionStats"; stats: CollectionStats }
   | { t: "moduleReply"; id: string; reply: MsgReply }
   | { t: "rpcResult"; id: string; result: TRpcResult }
   | { t: "rpcError"; id: string; error: string }

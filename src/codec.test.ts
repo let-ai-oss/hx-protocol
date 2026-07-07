@@ -18,6 +18,19 @@ describe("hx-protocol codec", () => {
     assert.deepStrictEqual(decodeFrame<FortressToHubFrame>(encodeFrame(f)), f);
   });
 
+  it("collectionStats up-frame round-trips (incl. null embeddings on a non-pgvector fortress)", () => {
+    const withIndex: FortressToHubFrame = {
+      t: "collectionStats",
+      stats: { sessions: 29, turns: 24460, embeddings: 6189 },
+    };
+    const noIndex: FortressToHubFrame = {
+      t: "collectionStats",
+      stats: { sessions: 3, turns: 12, embeddings: null },
+    };
+    assert.deepStrictEqual(decodeFrame<FortressToHubFrame>(encodeFrame(withIndex)), withIndex);
+    assert.deepStrictEqual(decodeFrame<FortressToHubFrame>(encodeFrame(noIndex)), noIndex);
+  });
+
   it("rpc/rpcResult round-trip with a specialized payload", () => {
     const down: HubToFortressFrame<{ op: "ping" }> = { t: "rpc", id: "2", req: { op: "ping" } };
     const up: FortressToHubFrame<{ ok: true }> = { t: "rpcResult", id: "2", result: { ok: true } };
