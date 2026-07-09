@@ -1,15 +1,51 @@
 # Security Policy
 
-## Supported versions
+`@let-ai/hx-protocol` is a shared wire-protocol library: TypeScript type
+definitions plus a JSON frame codec. It contains no transport, auth, or
+application logic — those live in the consuming repositories (`hx-fortress`,
+`hx`).
 
-This package is pre-1.0 (`0.x`). Only the latest commit on `main` receives fixes.
+## Supported Versions
 
-## Reporting a vulnerability
+Pre-1.0. Only the latest `main` / latest published version is supported.
 
-Please report security issues **privately** — do not open a public issue.
+| Version        | Supported          |
+| -------------- | ------------------ |
+| latest (main)  | :white_check_mark: |
+| older releases | :x:                |
 
-Use GitHub's private advisory flow: go to the **Security** tab of this repository and
-choose **Report a vulnerability**. This opens a private channel with the maintainers.
+## Reporting a Vulnerability
 
-We aim to acknowledge reports within a few business days and will coordinate a fix and
-disclosure timeline with you.
+**Please do not open a public GitHub issue for security vulnerabilities.**
+
+Report privately through either channel:
+
+- **Preferred:** GitHub Private Vulnerability Reporting — the "Report a
+  vulnerability" button under this repository's **Security** tab.
+- **Email:** security@let.ai. A PGP key for encrypted reports is available on
+  request (ask in your first message and we will supply the current key
+  fingerprint before you send any sensitive detail).
+
+## Response Targets
+
+| Stage                              | Target                  |
+| ---------------------------------- | ----------------------- |
+| Acknowledge receipt                | within 2 business days  |
+| Initial assessment / triage        | within 7 days           |
+| Fix or coordinated-disclosure plan | within 90 days          |
+
+Timelines may be adjusted for complex issues by mutual agreement.
+
+## Scope
+
+In scope: the codec and type definitions in this repository. **Out of scope:**
+transport security, authentication, and authorization — this package only
+*computes* commitments and *parses* frames; the sign/verify and trust
+decisions are enforced by the consuming layers. Report those against
+`hx-fortress` / `hx`.
+
+## Safe Harbor
+
+We will not pursue legal action against researchers who act in good faith,
+avoid privacy violations and service disruption, and give us a reasonable
+opportunity to remediate before public disclosure.
