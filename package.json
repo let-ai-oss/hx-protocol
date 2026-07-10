@@ -3,7 +3,6 @@
   "version": "0.2.0",
   "description": "Shared HX wire protocol: transport-neutral frame types + JSON codec.",
   "license": "MIT",
-  "private": true,
   "author": "let.ai",
   "type": "module",
   "repository": {
