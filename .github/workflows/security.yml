@@ -1,0 +1,93 @@
+name: Security
+
+# MVP security gate (HX OSS Readiness Plan, Part 4.1): secret scanning over full
+# history, SAST, and dependency/supply-chain audit. All third-party actions are
+# pinned to a full commit SHA; the trailing comment records the tag that SHA
+# corresponds to for readability.
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+  schedule:
+    - cron: "0 6 * * 1" # weekly (Mon 06:00 UTC) — catches newly published rules/CVEs
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: Secret scanning (full history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0 # full history so gitleaks/trufflehog scan every commit
+
+      - name: Gitleaks (full history)
+        # Run the gitleaks CLI directly (image pinned by digest) instead of
+        # gitleaks-action, so we scan ALL history on every event
+        # (--log-opts=--all); the action only scans the latest commit(s) on
+        # push/PR. The OSS CLI also needs no license.
+        # No --config: hx-protocol history is clean (no secret-shaped fixtures),
+        # so the built-in default ruleset runs unmodified.
+        # safe.directory is injected via env because the mounted repo is owned by
+        # the runner user, not the container's root. --redact keeps matches out
+        # of the logs.
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo \
+            -e GIT_CONFIG_COUNT=1 \
+            -e GIT_CONFIG_KEY_0=safe.directory \
+            -e GIT_CONFIG_VALUE_0=/repo \
+            ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            detect --source /repo --log-opts=--all --redact -v --exit-code 1
+
+      - name: TruffleHog (verified only)
+        uses: trufflesecurity/trufflehog@27b0417c16317ca9a472a9a8092acce143b49c55 # v3.95.9
+        with:
+          extra_args: --only-verified
+
+  sast:
+    name: Semgrep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Semgrep scan
+        # The Semgrep GitHub Action is deprecated; the supported path is the
+        # official container, run here via `docker run` (pinned by image digest).
+        # --config auto pulls JS/TS security + OWASP rulesets. Gate on ERROR only
+        # (plan's "zero High/Critical", §1.2); --error then fails CI on any
+        # ERROR-level finding. --exclude dist skips the committed generated
+        # output (it's compiled from src, which is scanned).
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src \
+            semgrep/semgrep@sha256:59fbed6127ea7c5dde3ba6a85142733bb20ea9aaa36120c953904f1539aaf66e \
+            semgrep scan --config auto --severity ERROR --error --exclude dist
+
+  deps:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # npm audit is informational: OSV-Scanner below is the authoritative gate
+      # (plan §1.3), reading osv-scanner.toml for documented exceptions.
+      - name: npm audit (informational)
+        run: npm audit || true
+
+      - name: OSV-Scanner (authoritative gate)
+        # Fails on any un-excepted High/Critical against package-lock.json.
+        uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
+        with:
+          scan-args: |-
+            --config=osv-scanner.toml
+            --lockfile=package-lock.json
