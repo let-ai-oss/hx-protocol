@@ -1,0 +1,8 @@
+# CodeQL configuration for hx-protocol.
+# dist/ is committed (consumers run no install-time build) but is generated from
+# src/, so analyzing it would duplicate every source finding. Exclude it here so
+# CodeQL reports each issue once, against the real source.
+name: "hx-protocol CodeQL config"
+
+paths-ignore:
+  - dist
